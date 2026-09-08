@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>website</key><string></string>
+    <key>additionalHosts</key><string></string>
+    <key>restrictNavigation</key><true/>
+    <key>idleSeconds</key><integer>120</integer>
+    <key>refreshMinutes</key><integer>0</integer>
+    <key>loadTimeout</key><integer>45</integer>
+    <key>displayID</key><integer>0</integer>
+    <key>fullScreen</key><true/>
+    <key>automaticDoNotDisturb</key><false/>
+    <key>startAutomatically</key><false/>
+    <key>recoverApplication</key><true/>
+    <key>persistentSession</key><false/>
+</dict>
+</plist>

@@ -1,0 +1,32 @@
+# SwiftPM output and per-user package state. Keep Package.resolved if dependencies are added.
+.build/
+.swiftpm/
+
+# Bundled apps and release downloads. Editable Assets/ stay tracked.
+dist/
+*.app/
+*.dSYM/
+
+# macOS and editor leftovers
+.DS_Store
+.AppleDouble
+._*
+*.swp
+*.swo
+*~
+*.log
+
+# Python test fixtures
+__pycache__/
+*.py[cod]
+
+# Local environment and Apple signing credentials
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.keychain
+*.keychain-db
+*.mobileprovision
+*.provisionprofile

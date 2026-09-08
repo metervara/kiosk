@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 700 630">
+  <title>Kiosk menu-bar symbol</title>
+  <desc>IBM Plex Sans Bold (700), matching outlined K and enlarged centered period. Transparent template artwork.</desc>
+  <g fill="#ffffff" transform="translate(-162 -197)">
+  <g id="letter-k" transform="translate(140.293664 752.000000) scale(0.687679083 -0.687679083)">
+    <path d="M505.000 -0.000 L320.000 304.000 L229.000 194.000 L229.000 -0.000 L77.000 -0.000 L77.000 698.000 L229.000 698.000 L229.000 501.000 L229.000 366.000 L235.000 366.000 L334.000 501.000 L491.000 698.000 L663.000 698.000 L428.000 411.000 L684.000 -0.000 Z"/>
+  </g>
+  <g id="centered-period" transform="translate(593.155046 589.244444) scale(0.977777778 -0.977777778)">
+    <path d="M155.000 -11.000 Q110.000 -11.000 88.500 12.000 Q67.000 35.000 67.000 69.000 L67.000 89.000 Q67.000 124.000 88.500 146.500 Q110.000 169.000 155.000 169.000 Q200.000 169.000 221.500 146.500 Q243.000 124.000 243.000 89.000 L243.000 69.000 Q243.000 35.000 221.500 12.000 Q200.000 -11.000 155.000 -11.000 Z"/>
+  </g>
+  </g>
+</svg>

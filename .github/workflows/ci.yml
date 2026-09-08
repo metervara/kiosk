@@ -1,0 +1,34 @@
+name: Build and test
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test on ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Validate scripts and version
+        run: |
+          bash -n build.sh scripts/*.sh
+          ./scripts/version.sh
+      - name: Test
+        run: |
+          swift test
+          python3 -m unittest discover -s Tests/DistributionTests -v
+      - name: Build app
+        run: ./build.sh
