@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:kiosk}",
+      "name": "Debug Kiosk",
+      "target": "Kiosk",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug Kiosk"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:kiosk}",
+      "name": "Release Kiosk",
+      "target": "Kiosk",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release Kiosk"
+    }
+  ]
+}

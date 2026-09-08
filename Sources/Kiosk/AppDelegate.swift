@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         let menuIcon = Bundle.main.image(forResource: "MenuBarIconTemplate")
             ?? NSImage(systemSymbolName: "arrow.up.left.and.arrow.down.right", accessibilityDescription: "Kiosk")
-        menuIcon?.size = NSSize(width: 20, height: 18)
+        menuIcon?.size = NSSize(width: 18, height: 18)
         menuIcon?.isTemplate = true
         menuIcon?.accessibilityDescription = "Kiosk"
         statusItem.button?.image = menuIcon

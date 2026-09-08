@@ -5,6 +5,7 @@ import KioskCore
 @MainActor
 final class SettingsWindow: NSWindowController, NSWindowDelegate {
     private let store: SettingsStore
+    private let appIcon = NSImageView()
     var onStart: ((Bool) -> Void)?
     private let website = NSTextField()
     private let hosts = NSTextField()
@@ -59,6 +60,10 @@ final class SettingsWindow: NSWindowController, NSWindowDelegate {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     func present() {
+        // Read the current bundle asset instead of retaining a named image across rebuilds.
+        appIcon.image = Bundle.main.url(forResource: "AppIcon", withExtension: "icns")
+            .flatMap { NSImage(contentsOf: $0) }
+            ?? NSImage(systemSymbolName: "display", accessibilityDescription: "Kiosk")
         populate()
         showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -82,8 +87,7 @@ final class SettingsWindow: NSWindowController, NSWindowDelegate {
             root.topAnchor.constraint(equalTo: content.topAnchor, constant: 14),
             root.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -24)
         ])
-        let icon = NSImageView()
-        icon.image = Bundle.main.image(forResource: "AppIcon") ?? NSImage(systemSymbolName: "display", accessibilityDescription: nil)
+        let icon = appIcon
         icon.imageScaling = .scaleProportionallyUpOrDown
         icon.widthAnchor.constraint(equalToConstant: 62).isActive = true
         icon.heightAnchor.constraint(equalToConstant: 62).isActive = true
