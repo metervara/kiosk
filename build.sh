@@ -4,7 +4,6 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_DIR"
 OUTPUT_APP="$PROJECT_DIR/dist/Kiosk.app"
-SIGNING_IDENTITY="${SIGNING_IDENTITY:--}"
 UNIVERSAL=false
 case "${1:-}" in
     "") ;;
@@ -46,14 +45,8 @@ cp Assets/AppIcon.icns "$APP_PATH/Contents/Resources/AppIcon.icns"
 cp Assets/MenuBarIconTemplate.png "$APP_PATH/Contents/Resources/MenuBarIconTemplate.png"
 cp -R Model "$APP_PATH/Contents/Resources/Model"
 chmod 755 "$APP_PATH/Contents/MacOS/Kiosk"
-SIGNING_OPTIONS=(--force --sign "$SIGNING_IDENTITY")
-if [ "$SIGNING_IDENTITY" != "-" ]; then
-    SIGNING_OPTIONS+=(--options runtime --timestamp)
-fi
-if [ -n "${SIGNING_KEYCHAIN:-}" ]; then
-    SIGNING_OPTIONS+=(--keychain "$SIGNING_KEYCHAIN")
-fi
-/usr/bin/codesign "${SIGNING_OPTIONS[@]}" "$APP_PATH"
+# Ad-hoc signing is local and needs no Apple account, certificate, or keychain.
+/usr/bin/codesign --force --sign - "$APP_PATH"
 /usr/bin/codesign --verify --strict --verbose=2 "$APP_PATH"
 # Replace the bundle only after verification, without overwriting a running binary.
 if [ -e "$OUTPUT_APP" ]; then

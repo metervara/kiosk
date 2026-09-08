@@ -23,7 +23,6 @@ jobs:
       contents: write
     env:
       RELEASE_TAG: ${{ github.ref_name }}
-      SIGNING_ENABLED: ${{ vars.APPLE_SIGNING_ENABLED || 'false' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -31,43 +30,6 @@ jobs:
           persist-credentials: false
       - name: Validate release tag
         run: ./scripts/version.sh --check-tag "$RELEASE_TAG"
-
-      - name: Import Developer ID certificate and notarization credentials
-        if: env.SIGNING_ENABLED == 'true'
-        env:
-          CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
-          API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
-        run: |
-          set -euo pipefail
-          : "${CERTIFICATE_BASE64:?Missing certificate}" "${CERTIFICATE_PASSWORD:?Missing certificate password}"
-          : "${SIGNING_IDENTITY:?Missing Developer ID identity}" "${API_KEY_BASE64:?Missing notarization API key}"
-          : "${API_KEY_ID:?Missing API key ID}" "${API_ISSUER_ID:?Missing API issuer ID}"
-          if [[ "$SIGNING_IDENTITY" != 'Developer ID Application: '* ]]; then
-            echo "APPLE_SIGNING_IDENTITY must be a Developer ID Application identity." >&2
-            exit 1
-          fi
-          umask 077
-          KEYCHAIN_PATH="$RUNNER_TEMP/kiosk-signing.keychain-db"
-          CERTIFICATE_PATH="$RUNNER_TEMP/kiosk-certificate.p12"
-          API_KEY_PATH="$RUNNER_TEMP/kiosk-notary.p8"
-          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
-          echo "::add-mask::$KEYCHAIN_PASSWORD"
-          printf '%s' "$CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
-          printf '%s' "$API_KEY_BASE64" | base64 --decode > "$API_KEY_PATH"
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 3600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$CERTIFICATE_PATH" -P "$CERTIFICATE_PASSWORD" -t cert -f pkcs12 \
-            -k "$KEYCHAIN_PATH" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          xcrun notarytool store-credentials kiosk-notary --key "$API_KEY_PATH" \
-            --key-id "$API_KEY_ID" --issuer "$API_ISSUER_ID" --keychain "$KEYCHAIN_PATH"
-          printf 'SIGNING_IDENTITY=%s\nSIGNING_KEYCHAIN=%s\nNOTARY_PROFILE=kiosk-notary\n' \
-            "$SIGNING_IDENTITY" "$KEYCHAIN_PATH" >> "$GITHUB_ENV"
 
       - name: Build universal app and package download
         run: ./scripts/package-release.sh "$RELEASE_TAG"
@@ -94,11 +56,3 @@ jobs:
             gh release create "$RELEASE_TAG" "$ARCHIVE" "$ARCHIVE.sha256" "${RELEASE_OPTIONS[@]}"
           fi
           gh release edit "$RELEASE_TAG" --draft=false
-
-      - name: Clean up signing credentials
-        if: always() && env.SIGNING_ENABLED == 'true'
-        run: |
-          if [ -f "$RUNNER_TEMP/kiosk-signing.keychain-db" ]; then
-            security delete-keychain "$RUNNER_TEMP/kiosk-signing.keychain-db"
-          fi
-          rm -f "$RUNNER_TEMP/kiosk-certificate.p12" "$RUNNER_TEMP/kiosk-notary.p8"

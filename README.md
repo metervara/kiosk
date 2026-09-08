@@ -124,7 +124,7 @@ git push origin v1.1.0
 
 GitHub Actions tests both architectures, builds the universal app, and publishes a GitHub Release with the app ZIP, checksum, and release notes. The tag must match the plist version. Tags such as `v1.1.0-rc.1` produce prereleases.
 
-With Apple signing credentials configured, releases are Developer ID signed and notarized. Otherwise they use an ad-hoc signature and macOS may block the downloaded app until manually approved. `./scripts/package-release.sh` creates the same download locally without publishing it.
+Local builds and GitHub releases always use **ad-hoc signing**. No Apple Developer account, certificates, signing secrets, or notarization setup is needed. The app is not notarized, so macOS may block a downloaded copy until manually approved. `./scripts/package-release.sh` creates the same download locally without publishing it.
 
 Users download the app ZIP, unzip it, and move `Kiosk.app` into `/Applications`. Install updates between exhibitions; saved settings remain. There is no in-app updater.
 

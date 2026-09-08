@@ -36,37 +36,19 @@ For the initial version already in this folder, use `v1.0.0` after committing th
 After both test jobs pass, `.github/workflows/release.yml`:
 
 1. Checks that the tag matches the source plist.
-2. Builds each architecture using SwiftPM, combines them with `lipo`, and signs the resulting bundle.
-3. Optionally notarizes and staples the app if Apple signing is configured below.
-4. Packages `Kiosk-1.1.0-macos-universal.zip` and its `.sha256` file.
-5. Attaches the downloads and release notes to a draft, then automatically publishes the completed release. Candidate tags are also marked as prereleases.
+2. Builds each architecture using SwiftPM, combines them with `lipo`, and ad-hoc signs the resulting bundle.
+3. Packages `Kiosk-1.1.0-macos-universal.zip` and its `.sha256` file.
+4. Attaches the downloads and release notes to a draft, then automatically publishes the completed release. Candidate tags are also marked as prereleases.
 
 Pushing the tag is the release action: no separate Publish click is needed. Re-running a failed workflow can replace assets in an unfinished draft and refreshes the generated installation/signing block while preserving change notes you edited outside that block. Keep the `kiosk-build` comment markers so the block can be found. It refuses to overwrite an already published release: make a new version for changes. See the [GitHub release command documentation](https://cli.github.com/manual/gh_release_create).
 
 After publication, users can download the ZIP from your repository's Releases page, unzip it, and move `Kiosk.app` into `/Applications`. Use the attached app ZIP, not GitHub's automatically generated “Source code” archive. A public repository's published releases are publicly downloadable; private repository downloads require repository access.
 
-## Signing and Gatekeeper
+## Ad-hoc signing
 
-The workflow works immediately with **ad-hoc signing**, without Apple credentials. This is suitable for testing and machines you manage, but it does **not** provide a trusted Developer ID signature or notarization. Gatekeeper may block a browser-downloaded build. Release notes explicitly identify its signing status; do not describe it as notarized.
+Local builds and GitHub releases always run `codesign --force --sign -`. No Apple Developer account, certificates, keychain setup, repository signing secrets, or notarization service is required.
 
-For general distribution, configure **Developer ID Application signing + Apple notarization**. This requires an Apple Developer Program account, an appropriate signing certificate with its private key, and notarization credentials. The scripts use hardened runtime, secure timestamps, `notarytool`, and `stapler`; no Xcode project or GUI build is involved. See [Apple's Developer ID guidance](https://developer.apple.com/developer-id/) and [custom notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow).
-
-In **GitHub → Settings → Secrets and variables → Actions**, add these repository secrets:
-
-| Secret | Value |
-| --- | --- |
-| `APPLE_CERTIFICATE_P12_BASE64` | Base64-encoded exported **Developer ID Application** certificate and private key (`.p12`) |
-| `APPLE_CERTIFICATE_PASSWORD` | Password used to export the `.p12` |
-| `APPLE_SIGNING_IDENTITY` | Full identity, such as `Developer ID Application: Your Name (TEAMID)` |
-| `APPLE_API_KEY_P8_BASE64` | Base64-encoded App Store Connect **team API key** (`.p8`) with permission to use the notary service |
-| `APPLE_API_KEY_ID` | That API key's identifier |
-| `APPLE_API_ISSUER_ID` | The team's issuer identifier |
-
-Then add the repository **variable** `APPLE_SIGNING_ENABLED` with value `true`. This is an explicit switch: missing/invalid secrets will fail the release instead of silently falling back to an unnotarized download. Do not enable it until the secrets are ready. Use GitHub's secret-entry UI or `gh secret set` with file input; do not commit certificates or private keys. Apple's certificate import is confined to the release job and a temporary keychain, following [GitHub's certificate handling guidance](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications).
-
-The workflow only uses these secrets on tag pushes, not on pull requests. It removes the temporary keychain and key files at the end. Protect release tags and workflow changes using your repository's access controls. All download assets are attached before publication, including when immutable releases are enabled.
-
-No signing credentials are configured by this repository, and notarization cannot be verified until valid credentials are supplied and a signed release is run.
+The app is ad-hoc signed and **not notarized**. macOS Gatekeeper may block a browser-downloaded copy until manually approved. Release notes identify this signing status.
 
 ## Build a release locally
 
@@ -82,15 +64,7 @@ Or specify a matching tag, including a prerelease suffix:
 ./scripts/package-release.sh v1.1.0-rc.1
 ```
 
-For a Developer ID signed and notarized release, install the signing identity in your Mac's keychain and store a notarization profile using `xcrun notarytool store-credentials`. Then:
-
-```sh
-SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
-NOTARY_PROFILE="kiosk-notary" \
-./scripts/package-release.sh
-```
-
-`SIGNING_KEYCHAIN` can optionally specify a custom keychain containing both the signing identity and notary profile. Notarization submits the ZIP, checks Apple's accepted status, staples the ticket to the app, and recreates the final ZIP. Nothing is uploaded to GitHub by this local packaging command.
+Nothing is uploaded to GitHub by the local packaging command.
 
 The standalone `./build.sh --universal` makes just the universal app. Plain `./build.sh` keeps the faster current-architecture build. All generated release files are in `dist/`.
 
